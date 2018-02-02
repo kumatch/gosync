@@ -10,7 +10,7 @@ type Group struct {
 	locker map[string]struct{}
 }
 
-func (g *Group) Do(key string, fn func() (interface{}, error), wait time.Duration) (v interface{}, err error, invoked bool) {
+func (g *Group) Do(key string, interval time.Duration, fn func() (interface{}, error)) (v interface{}, err error, invoked bool) {
 	g.mu.Lock()
 	if g.locker == nil {
 		g.locker = make(map[string]struct{})
@@ -25,7 +25,7 @@ func (g *Group) Do(key string, fn func() (interface{}, error), wait time.Duratio
 	g.mu.Unlock()
 
 	defer func() {
-		time.Sleep(wait)
+		time.Sleep(interval)
 		g.mu.Lock()
 		delete(g.locker, key)
 		g.mu.Unlock()
